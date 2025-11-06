@@ -11,6 +11,9 @@ Intelligenter AI Agent für Paperless-NGX mit automatischer Dokumentenklassifizi
 - **Web-Oberfläche**: Einfache Verwaltung und Überwachung
 - **100% Lokal**: Keine Cloud-Anbindung, alle Daten auf Ihrem Server
 
+## Architektur und Aufbau
+https://github.com/GamboSY/paperless-ngx-ai-agent/blob/main/ARCHITECTURE.md
+
 ## Voraussetzungen
 
 - Docker & Docker Compose
