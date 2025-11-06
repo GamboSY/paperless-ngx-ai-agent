@@ -1,0 +1,5 @@
+# Paperless AI Agent Cron Job
+# Läuft alle 30 Minuten
+*/30 * * * * cd /app && python main.py >> /app/logs/cron.log 2>&1
+
+# Leere Zeile am Ende erforderlich

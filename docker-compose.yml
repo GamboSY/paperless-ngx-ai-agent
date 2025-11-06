@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  paperless-ai-agent:
+    build: .
+    image: paperless-ai-agent:latest
+    container_name: paperless-ai-agent
+
+    # Host-Netzwerk verwenden für einfachen Zugriff auf localhost:8000
+    network_mode: host
+
+    # Environment-Datei
+    env_file:
+      - .env
+
+    # Environment-Variablen
+    environment:
+      - TZ=Europe/Berlin
+
+    # Volumes für Logs und Datenbank
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./.env:/app/.env:ro
+
+    # Restart Policy
+    restart: unless-stopped
+
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "python", "test_connection.py"]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    # Ressourcen-Limits (optional)
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

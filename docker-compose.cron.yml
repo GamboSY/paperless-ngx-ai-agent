@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  paperless-ai-agent-cron:
+    build: .
+    image: paperless-ai-agent:latest
+    container_name: paperless-ai-agent-cron
+
+    # Host-Netzwerk verwenden
+    network_mode: host
+
+    # Environment-Datei
+    env_file:
+      - .env
+
+    # Volumes
+    volumes:
+      - ./logs:/app/logs
+      - ./.env:/app/.env:ro
+      - ./crontab:/etc/cron.d/paperless-ai-agent:ro
+
+    # Restart Policy
+    restart: unless-stopped
+
+    # Cron-Mode: Überschreibe Command
+    entrypoint: /usr/local/bin/docker-entrypoint.sh
+    command: >
+      sh -c "
+      apt-get update && apt-get install -y cron &&
+      crontab /etc/cron.d/paperless-ai-agent &&
+      cron -f
+      "
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

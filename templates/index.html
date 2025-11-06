@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paperless-NGX AI Agent</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text x='0' y='14' font-size='14'>🤖</text></svg>">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #0d6efd;
+        }
+        .card {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary mb-4">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-robot"></i> Paperless-NGX AI Agent
+            </span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <!-- Navigation Sidebar -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <ul class="nav nav-pills flex-column" id="main-nav">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#dashboard" data-bs-toggle="pill">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#settings" data-bs-toggle="pill">
+                                    <i class="bi bi-gear"></i> Einstellungen
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#config" data-bs-toggle="pill">
+                                    <i class="bi bi-list-ul"></i> Konfiguration
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#documents" data-bs-toggle="pill">
+                                    <i class="bi bi-file-earmark-text"></i> Dokumente
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#history" data-bs-toggle="pill">
+                                    <i class="bi bi-clock-history"></i> Verlauf
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#qa" data-bs-toggle="pill">
+                                    <i class="bi bi-chat-dots"></i> Dokumenten-Chat
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#advanced-search" data-bs-toggle="pill">
+                                    <i class="bi bi-funnel"></i> Erweiterte Suche
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <div class="tab-content">
+                    <!-- Dashboard Tab -->
+                    <div class="tab-pane fade show active" id="dashboard">
+                        <h2 class="mb-4">Dashboard</h2>
+                        <div class="row" id="stats-container">
+                            <div class="col-md-4 mb-3">
+                                <div class="card stat-card bg-success text-white">
+                                    <div class="card-body">
+                                        <i class="bi bi-check-circle fs-1"></i>
+                                        <div class="stat-number" id="stat-successful">-</div>
+                                        <div>Erfolgreich</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card stat-card bg-danger text-white">
+                                    <div class="card-body">
+                                        <i class="bi bi-x-circle fs-1"></i>
+                                        <div class="stat-number" id="stat-failed">-</div>
+                                        <div>Fehlgeschlagen</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card stat-card bg-primary text-white">
+                                    <div class="card-body">
+                                        <i class="bi bi-hourglass-split fs-1"></i>
+                                        <div class="stat-number" id="stat-pending">-</div>
+                                        <div>Ausstehend</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Schnellaktionen</h5>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-primary" onclick="processAllPending()">
+                                    <i class="bi bi-play-circle"></i> Alle ausstehenden Dokumente verarbeiten
+                                </button>
+                                <button class="btn btn-secondary ms-2" onclick="refreshDashboard()">
+                                    <i class="bi bi-arrow-clockwise"></i> Aktualisieren
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Tab -->
+                    <div class="tab-pane fade" id="settings">
+                        <h2 class="mb-4">Einstellungen</h2>
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="settings-form">
+                                    <div class="mb-3">
+                                        <label class="form-label">Paperless-NGX URL</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="paperless-url" placeholder="http://localhost:8000">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="testConnection('paperless')">
+                                                <i class="bi bi-check-circle"></i> Testen
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Paperless-NGX Token</label>
+                                        <input type="password" class="form-control" id="paperless-token" placeholder="Token">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Ollama URL</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="ollama-url" placeholder="http://localhost:11434">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="testConnection('ollama')">
+                                                <i class="bi bi-check-circle"></i> Testen
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Ollama Model</label>
+                                        <input type="text" class="form-control" id="ollama-model" placeholder="qwen2.5:14b-instruct">
+                                        <small class="form-text text-muted">
+                                            Empfohlen: qwen2.5:14b-instruct, qwen2.5:32b-instruct-q4_K_M
+                                        </small>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-save"></i> Einstellungen speichern
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Config Tab -->
+                    <div class="tab-pane fade" id="config">
+                        <h2 class="mb-4">Konfiguration</h2>
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Dokumententypen</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="document-types-list" class="badge-list">
+                                    <div class="spinner-border text-primary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Personen-Tags</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="person-tags-list" class="badge-list">
+                                    <div class="spinner-border text-primary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Korrespondenten</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="correspondents-list" class="badge-list">
+                                    <div class="spinner-border text-primary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents Tab -->
+                    <div class="tab-pane fade" id="documents">
+                        <h2 class="mb-4">Ausstehende Dokumente</h2>
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Dokumente mit KI-Tag</h5>
+                                <button class="btn btn-sm btn-primary" onclick="loadPendingDocuments()">
+                                    <i class="bi bi-arrow-clockwise"></i> Aktualisieren
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="pending-documents-list">
+                                    <div class="text-center">
+                                        <div class="spinner-border text-primary" role="status"></div>
+                                        <p class="mt-2">Lade Dokumente...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Tab -->
+                    <div class="tab-pane fade" id="history">
+                        <h2 class="mb-4">Verarbeitungsverlauf</h2>
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Verarbeitete Dokumente</h5>
+                                <button class="btn btn-sm btn-primary" onclick="loadHistory()">
+                                    <i class="bi bi-arrow-clockwise"></i> Aktualisieren
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="history-list">
+                                    <div class="text-center">
+                                        <div class="spinner-border text-primary" role="status"></div>
+                                        <p class="mt-2">Lade Verlauf...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Q&A Tab -->
+                    <div class="tab-pane fade" id="qa">
+                        <h2 class="mb-4">
+                            <i class="bi bi-chat-dots"></i> Dokumenten-Chat
+                        </h2>
+
+                        <!-- Indexierung Status -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Indexierung</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Status:</strong> <span id="index-status">Lädt...</span></p>
+                                        <p class="mb-2"><strong>Indexierte Dokumente:</strong> <span id="indexed-docs">-</span></p>
+                                        <p class="mb-0"><strong>Gesamte Dokumente:</strong> <span id="total-docs">-</span></p>
+                                    </div>
+                                    <div class="col-md-6 text-end">
+                                        <button class="btn btn-primary" onclick="startIndexing()" id="btn-index">
+                                            <i class="bi bi-arrow-repeat"></i> Dokumente indexieren
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="testEmbedding()" id="btn-test-embedding">
+                                            <i class="bi bi-check-circle"></i> Embedding testen
+                                        </button>
+                                        <button class="btn btn-danger" onclick="resetIndex()" id="btn-reset">
+                                            <i class="bi bi-trash"></i> Index zurücksetzen
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q&A Interface -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Fragen Sie Ihre Dokumente</h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Chat History -->
+                                <div id="chat-history" style="min-height: 400px; max-height: 500px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 15px; background-color: #f8f9fa; margin-bottom: 15px;">
+                                    <div class="text-center text-muted">
+                                        <i class="bi bi-chat-text fs-1"></i>
+                                        <p class="mt-2">Stellen Sie eine Frage zu Ihren Dokumenten...</p>
+                                        <p class="small">Beispiele:</p>
+                                        <ul class="list-unstyled small">
+                                            <li>• "Welche Rechnungen habe ich von Firma XY?"</li>
+                                            <li>• "Fasse meine Verträge zusammen"</li>
+                                            <li>• "Was steht in meinen Dokumenten über Versicherungen?"</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <!-- Input Form -->
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="question-input"
+                                           placeholder="Ihre Frage..."
+                                           onkeypress="if(event.key==='Enter') askQuestion()">
+                                    <button class="btn btn-primary" type="button" onclick="askQuestion()" id="btn-ask">
+                                        <i class="bi bi-send"></i> Fragen
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    Tipp: Stellen Sie spezifische Fragen für bessere Ergebnisse
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Search Tab -->
+                    <div class="tab-pane fade" id="advanced-search">
+                        <h2 class="mb-4">
+                            <i class="bi bi-funnel"></i> Erweiterte Suche
+                        </h2>
+
+                        <!-- Filter Section -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Filter</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="filter-form">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Dokumenttyp</label>
+                                            <select class="form-select" id="filter-document-type">
+                                                <option value="">Alle Typen</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Korrespondent</label>
+                                            <select class="form-select" id="filter-correspondent">
+                                                <option value="">Alle Korrespondenten</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Tags</label>
+                                            <select class="form-select" id="filter-tags" multiple size="5">
+                                                <!-- Tags werden dynamisch geladen -->
+                                            </select>
+                                            <small class="form-text text-muted">Mehrfachauswahl möglich (Ctrl/Cmd + Klick)</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Jahr</label>
+                                            <input type="number" class="form-control" id="filter-year"
+                                                   placeholder="z.B. 2024" min="2000" max="2099">
+                                            <small class="form-text text-muted">Leer lassen für alle Jahre</small>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Search Query -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Suchanfrage</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="advanced-search-query"
+                                           placeholder="Ihre Frage oder Suchanfrage..."
+                                           onkeypress="if(event.key==='Enter') performAdvancedSearch()">
+                                    <button class="btn btn-primary" type="button" onclick="performAdvancedSearch()" id="btn-advanced-search">
+                                        <i class="bi bi-search"></i> Suchen
+                                    </button>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">
+                                        <i class="bi bi-x-circle"></i> Filter zurücksetzen
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-sm" onclick="askWithFilters()">
+                                        <i class="bi bi-chat-dots"></i> Mit Filter beantworten
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search Results -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Suchergebnisse</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="advanced-search-results">
+                                    <div class="text-center text-muted">
+                                        <i class="bi bi-search fs-1"></i>
+                                        <p class="mt-2">Nutzen Sie Filter und Suche um Dokumente zu finden</p>
+                                        <p class="small">Tipp: Kombinieren Sie mehrere Filter für präzisere Ergebnisse</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="notification-toast" class="toast" role="alert">
+            <div class="toast-header">
+                <strong class="me-auto">Benachrichtigung</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
